@@ -1,19 +1,28 @@
 # wrong_data_save
 
 ```mermaid
-    graph LR;
-    A[data_insert]
-    B[check_num_in_dict]
-    C[data_insert_new_num]
-    D[data_insert_already_num]
-    E[search_elem_num]
+graph TD;
 
-
-    subgraph wrong_word_save;
-    A-->B-->C
-    B-->D
-    subgraph data_insert_already_num;
-        D-->E
-    end
-    end;
+	subgraph PyQt5
+		subgraph QtWidgets
+			QApplication
+			QListWidget
+			subgraph QVBoxLayout
+			addWidget
+			end
+			QWidget
+		end
+	end
+	subgraph vbox
+	A[addWidget]
+	end
+	subgraph Example
+		setLayout
+	end
+	QWidget --> Example
+	QVBoxLayout --> vbox
+	QListWidget --> list_widget
+	list_widget --> A
+	vbox --> setLayout
+	
 ```

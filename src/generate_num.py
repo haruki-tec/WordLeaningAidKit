@@ -49,7 +49,4 @@ def unexpected_arguments_error():
     print("入力を見直してください")
     return -1
         
-        
-print(gen_aligned_nums_with_char(1,100,10))
-
 
