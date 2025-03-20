@@ -60,20 +60,45 @@ class Example(QWidget):
         
         
         
+        #最終的な左レイアウト
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(operation_box)
+        main_layout.addWidget(self.list_widget)
         
         
         
         
         
-        #最終的なレイアウト
-        layout = QVBoxLayout()
-        layout.addLayout(operation_box)
-        layout.addWidget(self.list_widget)
+        
+        
+        
+        
+        
+        
+        
+        check_button = QPushButton("わからなかった...")
+        
+        
+        
+        
+        
+        #最終的な右レイアウト
+        sub_layout = QVBoxLayout()
+        sub_layout.addWidget(check_button)
+        
+        
+        
+        
+        
+        #最終的な総合レイアウト
+        layout = QHBoxLayout()
+        layout.addLayout(main_layout)
+        layout.addLayout(sub_layout)
         
         self.setLayout(layout)
 
         # ウィンドウの設定
-        self.setGeometry(300, 300, 300, 600)
+        self.setGeometry(300, 300, 600, 600)
         self.setWindowTitle('consecutive nums generator')
         self.show()
     
