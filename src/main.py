@@ -1,6 +1,7 @@
 import sys
 from generate_num import gen_aligned_nums_with_char
-from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QVBoxLayout,QPushButton,QHBoxLayout,QLineEdit,QLabel,QSpinBox
+from miss_word import appdate_missed_words_dict,create_texts_about_keys_and_values_from_dict
+from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QVBoxLayout,QPushButton,QHBoxLayout,QLineEdit,QLabel,QSpinBox,QAbstractItemView
 from PyQt5.QtGui import QFont,QIntValidator
 from PyQt5.QtCore import Qt
 
@@ -11,9 +12,11 @@ class Example(QWidget):
         
         
         #生成基準
-        self.startNum = 1
-        self.endNum = 100
-        self.genNum = 0
+        self.start_num = 1
+        self.end_num = 100
+        self.gen_num = 0
+        
+        self.missed_words_dict = {}
         
         
         self.initUI()
@@ -21,10 +24,12 @@ class Example(QWidget):
         
 
     def initUI(self):
+        
+        #左レイアウト
 
         #ボタンの作成
         randomize_button = QPushButton("生成")
-        randomize_button.clicked.connect(self.on_button_clicked)
+        randomize_button.clicked.connect(self.on_gen_num_button_clicked)
         operation_box = QVBoxLayout()
         
         #出題数ラベルテキストボックス
@@ -53,17 +58,27 @@ class Example(QWidget):
 
         
         # QListWidget の作成
-        self.list_widget = QListWidget()
-        self.update_list()
+        self.generated_num_list_widget = QListWidget()
+        #複数の単語をまとめて選択可能化
+        self.generated_num_list_widget.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.update_generated_num_list()
         # 文字の大きさの変更
-        self.list_widget.setFont(QFont("Arial", 20))
+        self.generated_num_list_widget.setFont(QFont("Arial", 20))
+        
+        
+        
+        
+        #わからなかったボタン
+        miss_word_button = QPushButton("わからなかった...")
+        miss_word_button.clicked.connect(self.on_miss_word_button_clicked)
         
         
         
         #最終的な左レイアウト
         main_layout = QVBoxLayout()
         main_layout.addLayout(operation_box)
-        main_layout.addWidget(self.list_widget)
+        main_layout.addWidget(self.generated_num_list_widget)
+        main_layout.addWidget(miss_word_button)
         
         
         
@@ -72,19 +87,19 @@ class Example(QWidget):
         
         
         
+        #右レイアウト
         
         
         
-        
-        check_button = QPushButton("わからなかった...")
-        
+        self.miss_word_list_widget = QListWidget()
+        self.miss_word_list_widget.setFont(QFont("Arial", 20))
         
         
         
         
         #最終的な右レイアウト
         sub_layout = QVBoxLayout()
-        sub_layout.addWidget(check_button)
+        sub_layout.addWidget(self.miss_word_list_widget)
         
         
         
@@ -102,22 +117,39 @@ class Example(QWidget):
         self.setWindowTitle('consecutive nums generator')
         self.show()
     
-    def on_button_clicked(self):
+    def on_gen_num_button_clicked(self):
         gen_num_str = self.gen_num_text_box.text()
         begin_num_str = self.begin_num_text_box.text()
         end_num_str = self.end_num_text_box.text()
         
         if gen_num_str and begin_num_str and end_num_str:
-            self.genNum = int(gen_num_str)
+            self.gen_num = int(gen_num_str)
             self.beginNum = int(begin_num_str)
-            self.endNum = int(end_num_str)
-            self.update_list()
+            self.end_num = int(end_num_str)
+            self.update_generated_num_list()
                 
-    def update_list(self):
-        self.list_widget.clear()
-        my_list = gen_aligned_nums_with_char(self.startNum, self.endNum, self.genNum)
+    def update_generated_num_list(self):
+        self.generated_num_list_widget.clear()
+        my_list = gen_aligned_nums_with_char(self.start_num, self.end_num, self.gen_num)
         
-        self.list_widget.addItems(my_list)
+        self.generated_num_list_widget.addItems(my_list)
+        
+    def update_miss_word_list(self,selected_words):
+        
+        self.miss_word_list_widget.clear()
+        appdate_missed_words_dict(self.missed_words_dict,selected_words)
+        missed_words = create_texts_about_keys_and_values_from_dict(self.missed_words_dict)
+        
+        self.miss_word_list_widget.addItems(missed_words)
+    
+    def on_miss_word_button_clicked(self):
+        items = self.generated_num_list_widget.selectedItems()
+        
+        if items:
+            selected_texts = [item.text() for item in items]
+            
+            self.update_miss_word_list(selected_texts)
+        
         
     #(self,テキストボックスに表示する文字,テキストボックスインスタンス,矢印の感度,初期値)
     def create_labeled_textbox(self,label,text_box,single_step,init_value):
