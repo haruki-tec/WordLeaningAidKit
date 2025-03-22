@@ -1,8 +1,8 @@
 import sys
 from generate_num import gen_aligned_nums_with_char
-from miss_word import appdate_missed_words_dict,create_texts_about_keys_and_values_from_dict
+from miss_word import appdate_missed_words_dict,create_texts_about_keys_and_values_from_dict,delete_miss_words
 from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QVBoxLayout,QPushButton,QHBoxLayout,QLineEdit,QLabel,QSpinBox,QAbstractItemView
-from PyQt5.QtGui import QFont,QIntValidator
+from PyQt5.QtGui import QFont,QIntValidator,QColor
 from PyQt5.QtCore import Qt
 
 class Example(QWidget):
@@ -18,6 +18,7 @@ class Example(QWidget):
         
         self.missed_words_dict = {}
         
+        self.gen_list = []        
         
         self.initUI()
         
@@ -92,13 +93,23 @@ class Example(QWidget):
         
         
         self.miss_word_list_widget = QListWidget()
+        #複数選択できるようにする
+        self.miss_word_list_widget.setSelectionMode(QAbstractItemView.MultiSelection)
         self.miss_word_list_widget.setFont(QFont("Arial", 20))
         
         
         
         
         #最終的な右レイアウト
+        
+        #わかるようになったボタン
+        understand_button = QPushButton("わかるようになった")
+        understand_button.clicked.connect(self.on_understand_button_clicked)
+
+        
+        
         sub_layout = QVBoxLayout()
+        sub_layout.addWidget(understand_button)
         sub_layout.addWidget(self.miss_word_list_widget)
         
         
@@ -128,19 +139,44 @@ class Example(QWidget):
             self.end_num = int(end_num_str)
             self.update_generated_num_list()
                 
+    #ランダム生成された整数郡をリストに表示する
     def update_generated_num_list(self):
         self.generated_num_list_widget.clear()
-        my_list = gen_aligned_nums_with_char(self.start_num, self.end_num, self.gen_num)
         
-        self.generated_num_list_widget.addItems(my_list)
+        self.gen_list.clear()
+        self.gen_list = gen_aligned_nums_with_char(self.start_num, self.end_num, self.gen_num)
         
-    def update_miss_word_list(self,selected_words):
+        self.generated_num_list_widget.addItems(self.gen_list)
+        
+        self.add_color_to_QList_from_list()
+        
+    def clear_color_to_QList(self):
+        for nops in range(self.generated_num_list_widget.count()):
+            item = self.generated_num_list_widget.item(nops)
+            item.setBackground(QColor("#ffffff"))
+        
+    def add_color_to_QList_from_list(self):
+        for nops in range(len(self.gen_list)):
+            self.add_color_to_QList_from_num(nops)
+            
+    def add_color_to_QList_from_num(self,nops):
+        if int(self.gen_list[nops]) in self.missed_words_dict:
+            item = self.generated_num_list_widget.item(nops)
+            item.setBackground(QColor("#ffc0cb"))
+            
+    def clear_selection_of_QList(self,list_widget):
+        list_widget.clearSelection()
+             
+        
+    def update_miss_word_list(self):
         
         self.miss_word_list_widget.clear()
-        appdate_missed_words_dict(self.missed_words_dict,selected_words)
         missed_words = create_texts_about_keys_and_values_from_dict(self.missed_words_dict)
         
         self.miss_word_list_widget.addItems(missed_words)
+        
+        #generated_numに色付けする
+        self.add_color_to_QList_from_list()
     
     def on_miss_word_button_clicked(self):
         items = self.generated_num_list_widget.selectedItems()
@@ -148,7 +184,13 @@ class Example(QWidget):
         if items:
             selected_texts = [item.text() for item in items]
             
-            self.update_miss_word_list(selected_texts)
+            appdate_missed_words_dict(self.missed_words_dict,selected_texts)
+            
+            self.update_miss_word_list()
+            
+            self.clear_selection_of_QList(self.generated_num_list_widget)
+            
+
         
         
     #(self,テキストボックスに表示する文字,テキストボックスインスタンス,矢印の感度,初期値)
@@ -170,6 +212,20 @@ class Example(QWidget):
         vbox.addWidget(text_box)
         
         return vbox
+    
+    def on_understand_button_clicked(self):
+        items = self.miss_word_list_widget.selectedItems()
+        
+        if items:
+            items_text = [item.text() for item in items]
+            delete_miss_words(self.missed_words_dict,items_text)
+            
+            self.update_miss_word_list()
+            
+            #generated_num_QListに色付けする
+            self.clear_color_to_QList()
+            self.add_color_to_QList_from_list()
+            
     
 
 

@@ -1,3 +1,5 @@
+import re
+
 def insert_missed_word_in_dict(dict,num):
     dict[num] = 1
     
@@ -35,3 +37,12 @@ def sort_dict(dict):
     dict.clear()
     dict.update(new_align_dict)
     
+def delete_miss_word(dict,word):
+    del dict[word]
+    
+def delete_miss_words(dict,words):
+    for word in words:
+        re_match = re.search(r'^\d+', word)
+        delete_miss_word(dict,int(re_match.group(0)))
+        
+    sort_dict(dict)
